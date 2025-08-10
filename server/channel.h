@@ -105,10 +105,10 @@ const char* GetChannelName(Protocol_ChannelID_t ChannelID) {
   auto& Channel = g_pile->ChannelList[ChannelID];
   switch(Channel.Type) {
     case Protocol::ChannelType_ScreenShare_e:
-      snprintf(name_buffer, sizeof(name_buffer), "Screen Share #%d", ChannelID.g());
+      snprintf(name_buffer, sizeof(name_buffer), "Screen Share #%d", (unsigned short)ChannelID);
       break;
     default:
-      snprintf(name_buffer, sizeof(name_buffer), "Channel #%d", ChannelID.g());
+      snprintf(name_buffer, sizeof(name_buffer), "Channel #%d", (unsigned short)ChannelID);
       break;
   }
   return name_buffer;
@@ -117,7 +117,7 @@ const char* GetChannelName(Protocol_ChannelID_t ChannelID) {
 Protocol_SessionID_t GetChannelHost(Protocol_ChannelID_t ChannelID) {
   if (IsChannelInvalid(ChannelID)) {
     Protocol_SessionID_t invalid;
-    invalid.g() = (Protocol_SessionID_t::Type)-1;
+    invalid = (Protocol_SessionID_t::Type)-1;
     return invalid;
   }
   
@@ -129,7 +129,7 @@ Protocol_SessionID_t GetChannelHost(Protocol_ChannelID_t ChannelID) {
     }
     default: {
       Protocol_SessionID_t invalid;
-      invalid.g() = (Protocol_SessionID_t::Type)-1;
+      invalid = (Protocol_SessionID_t::Type)-1;
       return invalid;
     }
   }
@@ -137,7 +137,7 @@ Protocol_SessionID_t GetChannelHost(Protocol_ChannelID_t ChannelID) {
 
 const char* GetSessionUsername(Protocol_SessionID_t SessionID) {
   static char username_buffer[32];
-  snprintf(username_buffer, sizeof(username_buffer), "User_%d", SessionID.g());
+  snprintf(username_buffer, sizeof(username_buffer), "User_%d", (unsigned short)SessionID);
   return username_buffer;
 }
 

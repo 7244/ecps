@@ -1,3 +1,8 @@
+import fan.event;
+import fan.print;
+
+#include <functional>
+
 #include "Base.h"
 
 template <typename T>
@@ -330,12 +335,14 @@ void evio_udp_cb(EV_t *listener, EV_event_t *evio_udp, uint32_t flag){
 }
 
 int main(int argc, char **argv){
+  uint16_t port = 43254;
   if(argc != 2){
-    WriteInformation("usage:\n./a.exe <port number>\r\n");
-    return 1;
+    fan::print("usage:a.exe <port number>");
+    fan::print("defaulting to port:", port);
   }
-
-  uint16_t port = STR_psh32_digit(argv[1], MEM_cstreu(argv[1]));
+  else {
+    port = std::stoul(argv[1]);
+  }
 
   g_pile = new pile_t;
 

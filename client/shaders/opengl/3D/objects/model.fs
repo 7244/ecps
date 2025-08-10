@@ -1,57 +1,71 @@
-R"(
+#version 120
 
-#version 130
+varying vec2 tex_coord;
+varying vec3 v_normal;
+varying vec3 v_pos;
+varying vec4 bw;
 
-out vec4 color;
+varying vec4 vcolor;
 
-in vec3 fragment_position;
-in vec2 texture_coordinate;
-in vec3 normal;
-in vec3 view_position;
-in vec3 tanget_fragment_position;
-in vec3 tanget_view_position;
-in vec3 tanget_light_position;
+varying vec3 c_tangent;
+varying vec3 c_bitangent;
+//layout (location = 0) out vec4 color;
 
-uniform sampler2D _t00; // diffuse
-uniform sampler2D texture_depth;
-uniform samplerCube skybox;
+uniform sampler2D _t00; // aiTextureType_NONE
+uniform sampler2D _t01; // aiTextureType_DIFFUSE
+uniform sampler2D _t02; // aiTextureType_SPECULAR
+uniform sampler2D _t03; // aiTextureType_AMBIENT
+uniform sampler2D _t04; // aiTextureType_EMISSIVE
+uniform sampler2D _t05; // aiTextureType_HEIGHT
+uniform sampler2D _t06; // aiTextureType_NORMALS
+uniform sampler2D _t07; // aiTextureType_SHININESS
+uniform sampler2D _t08; // aiTextureType_OPACITY
+uniform sampler2D _t09; // aiTextureType_DISPLACEMENT
+uniform sampler2D _t10; // aiTextureType_LIGHTMAP
+uniform sampler2D _t11; // aiTextureType_REFLECTION
+uniform sampler2D _t12; // aiTextureType_BASE_COLOR
+uniform sampler2D _t13; // aiTextureType_NORMAL_CAMERA
+uniform sampler2D _t14; // aiTextureType_EMISSION_COLOR
+uniform sampler2D _t15; // aiTextureType_METALNESS
+uniform sampler2D _t16; // aiTextureType_DIFFUSE_ROUGHNESS
+uniform sampler2D _t17; // aiTextureType_AMBIENT_OCCLUSION
+uniform sampler2D _t18; // aiTextureType_SHEEN
+uniform sampler2D _t19; // aiTextureType_CLEARCOAT
+uniform sampler2D _t20; // aiTextureType_TRANSMISSION
 
-uniform float s;
+uniform vec3 light_position;
+uniform vec3 light_color;
+uniform vec3 view_p;
+uniform float specular_strength;
+uniform float light_intensity;
+
+#define AI_TEXTURE_TYPE_MAX 21
+uniform vec4 material_colors[AI_TEXTURE_TYPE_MAX + 1];
 
 void main() {
+  float specular_ = texture2D(_t02, tex_coord).r;
 
-  vec4 object_color = vec4(1, 1, 1, 1);
-
-
-  vec3 light_color = vec3(1, 1, 1);
-
-  vec3 ambient = 0.8 * light_color;
-
-  vec4 diffuse_map = texture(_t00, vec2(texture_coordinate.x, 1.0 - texture_coordinate.y));
-
-  vec3 texture_normal = texture(texture_depth, texture_coordinate).xyz;
-  texture_normal = normalize(texture_normal * 2 - 1.0); 
-
-  vec3 lightDir = normalize(tanget_light_position - tanget_fragment_position);
-  float diff = max(dot(lightDir, texture_normal), 0.0);
-  vec3 diffuse = diff * diffuse_map.xyz;
-  // specular
-  vec3 viewDir = normalize(tanget_view_position - tanget_fragment_position);
-  vec3 halfwayDir = normalize(lightDir + viewDir);  
-  float spec = pow(max(dot(texture_normal, halfwayDir), 0.0), 32.0);
-
-  vec3 specular = vec3(0.5) * spec;
-
-  //if (true) {
-  //  color = vec4(ambient + diffuse + specular, 1);
-  //}
-  //else {
-  //  vec3 i = normalize(fragment_position - view_position);
-  //  vec3 r = reflect(i, normalize(normal));
-  //  color = vec4(texture(skybox, r).rgb * vec3(1, 0.3, 0.3), diffuse_map.w);
-  //}
-
-   color = diffuse_map;
+  vec4 albedo;
+  albedo = texture2D(_t01, tex_coord);
+  albedo *= vcolor;
+  albedo.rgb = max(albedo.rgb, vec3(0.05));
+  
+  vec3 adjusted_light_color = light_color * light_intensity;
+  float ambient = 0.4;
+  vec3 norm = normalize(v_normal);
+  vec3 light_dir = normalize(light_position - v_pos);
+  float diff = max(dot(norm, light_dir), 0.0);
+  float diffuse = diff;
+  vec3 view_dir = normalize(view_p - v_pos);
+  vec3 reflect_dir = reflect(-light_dir, norm);
+  float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32);
+  vec3 specular = specular_ * spec * adjusted_light_color;
+  vec3 brightness_magic = vec3(0.2126, 0.7152, 0.0722);
+  vec3 albedo_multiply = albedo.rgb * brightness_magic;
+  float albedo_brightness = albedo_multiply.x + albedo_multiply.y + albedo_multiply.z;
+  //float albedo_brightness = max(max(albedo.r, albedo.g), albedo.b);
+  //vec3 final_color = albedo.rgb * max(diffuse, ambient);
+  float lowest = min(min(light_color.r, light_color.g), light_color.b);
+  vec3 final_color = albedo.rgb * lowest + (albedo_brightness * light_color * (1.0 - lowest)) + specular;
+  gl_FragColor = vec4(final_color, albedo.a);
 }
-
-)"

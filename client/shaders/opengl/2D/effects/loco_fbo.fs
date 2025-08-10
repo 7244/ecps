@@ -9,7 +9,7 @@ uniform sampler2D _t01; // Bloom texture
 uniform sampler2D _t02; // Bloom texture
 uniform float bloom_strength = 0;
 uniform float gamma = 1.03;
-uniform float gamma2 = 1.03;
+uniform float gamma2 = 1.00;
 uniform float bloom_gamma = 1.03;
 uniform float exposure = 1.0;
 
@@ -33,19 +33,7 @@ vec3 uncharted2_tone_mapping(vec3 color) {
 vec3 apply_bloom(vec3 hdrColor, vec3 bloomColor) {
     float brightness = dot(bloomColor, vec3(0.2126, 0.7152, 0.0722));
 
-    float bloomFactor = smoothstep(0.6, 1.0, bloom_strength * brightness);
-
-    hdrColor = pow(hdrColor, vec3(1.0 / gamma));
-    bloomColor = pow(bloomColor, vec3(1.0 / bloom_gamma));
-
-    vec3 result = hdrColor + bloomColor * bloomFactor * bloom_intensity;
-
-    // Apply tone mapping
-   // result = reinhard_tone_mapping(result);
-    // Or use the Uncharted 2 tone mapping operator
-    // result = uncharted2_tone_mapping(result);
-
-    result = pow(result, vec3(1.0 / gamma2));
+    vec3 result = mix(hdrColor, bloomColor, bloom_strength);
 
     return result;
 }
@@ -143,6 +131,6 @@ vec2 uv = gl_FragCoord.xy / window_size;
   //  color = rgb_split(texture_coordinate, color);
 
     color = apply_bloom(hdrColor, bloomColor);
-    color.rgb = 1.0 - exp(-color.rgb * exposure);
+    //color.rgb = 1.0 - exp(-color.rgb * exposure);
     o_attachment0 = vec4(color, 1.0);
 }

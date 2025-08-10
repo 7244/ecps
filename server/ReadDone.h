@@ -425,7 +425,7 @@ case Protocol_C2S_t::RequestChannelSessionList: {
     auto& user_session = g_pile->SessionList[n->data.SessionID];
     info.AccountID = user_session.AccountID;
       
-    info.IsHost = (n->data.SessionID.g() == host_session.g()) ? 1 : 0;
+    info.IsHost = (n->data.SessionID == host_session) ? 1 : 0;
     info.JoinedAt = 0;
       
     const char* username = GetSessionUsername(n->data.SessionID);

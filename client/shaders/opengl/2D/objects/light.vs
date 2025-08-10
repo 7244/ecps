@@ -5,15 +5,15 @@ layout (location = 1) in float in_parallax_factor;
 layout (location = 2) in vec2 in_size;
 layout (location = 3) in vec2 in_rotation_point;
 layout (location = 4) in vec4 in_color;
-layout (location = 5) in vec3 in_rotation_vector;
-layout (location = 6) in uint in_flags;
-layout (location = 7) in vec3 in_angle;
+layout (location = 5) in uint in_flags;
+layout (location = 6) in vec3 in_angle;
 
 
 out vec4 instance_color;
 out vec3 instance_position;
 out vec2 instance_size;
 out vec3 frag_position;
+out vec2 uv;
 
 out vec2 texture_coordinate;
 flat out uint fs_flags;
@@ -57,7 +57,8 @@ void main() {
 	vec4 fs2 = vec4(vec4(vec2(x, y) * in_size + p, in_position.z, 1));
 
 	frag_position = fs.xyz;
-
+  
+  uv = rp;
 	gl_Position = projection * view_mat * fs2;
 
 	instance_color = in_color;
