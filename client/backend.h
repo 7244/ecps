@@ -395,9 +395,7 @@ struct ecps_backend_t {
         co_return;
       }
       catch (fan::exception_t e) {
-        screen_decode->graphics_queue_callback([e] {
-          fan::printcl("failed to connect to server:"_str + e.reason + ", retrying...");
-        });
+        login_fail_cb(e);
       }
       co_await fan::co_sleep(1000);
       co_await connect(ip, port);
@@ -420,13 +418,14 @@ struct ecps_backend_t {
     co_await tcp_write(Protocol_C2S_t::JoinChannel, &channel_id, sizeof(channel_id));
     channel_info_t ci;
     ci.channel_id = channel_id;
+    ci.joined_at.start();
     channel_info.emplace_back(ci);
     udp_keep_alive.reset();
     {
       ecps_backend_t::Protocol_C2S_t::Channel_ScreenShare_ViewToShare_t rest;
-      rest.ChannelID = ecps_backend.channel_info.back().channel_id;
+      rest.ChannelID = channel_info.back().channel_id;
       rest.Flag = ecps_backend_t::ProtocolChannel::ScreenShare::ChannelFlag::ResetIDR;
-      co_await ecps_backend.tcp_write(
+      co_await tcp_write(
         ecps_backend_t::Protocol_C2S_t::Channel_ScreenShare_ViewToShare,
         &rest,
         sizeof(rest)
@@ -463,6 +462,10 @@ struct ecps_backend_t {
     channel_info.erase(
       std::remove_if(channel_info.begin(), channel_info.end(),
         [this](const auto& joined) {
+          if (joined.joined_at.elapsed() < 5e+9) {
+            return false;
+          }
+
           return std::none_of(available_channels.begin(), available_channels.end(),
             [&](const auto& available) {
               return available.channel_id.i == joined.channel_id.i;
@@ -480,6 +483,8 @@ struct ecps_backend_t {
   fan::network::tcp_t tcp_client;
   fan::network::udp_t udp_client;
   fan::event::task_t task_udp_listen;
+
+  std::function<void(fan::exception_t)> login_fail_cb;
 
   fan::network::tcp_keep_alive_t tcp_keep_alive{
     tcp_client,
@@ -646,6 +651,7 @@ struct ecps_backend_t {
 
     bool is_streaming = false;
     bool is_viewing = false;
+    fan::time::clock joined_at;
   };
   std::vector<channel_info_t> channel_info;
 
