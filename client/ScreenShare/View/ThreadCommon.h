@@ -68,7 +68,7 @@ static bool ThreadDecode_tp_outside_cb(EV_t *listener, EV_tp_t *tp){
           __FUNCTION__, __FILE__, __LINE__);*/
 
         const char *CodecName = "OpenH264";
-        if(ETC_VEDC_Decoder_Open(&This->Decoder, MEM_cstreu(CodecName), CodecName, 0) != ETC_VEDC_Decoder_Error_OK){
+        if(ETC_VEDC_Decoder_Open(&This->Decoder, MEM_cstrlen(CodecName), CodecName, 0) != ETC_VEDC_Decoder_Error_OK){
           WriteInformation(
             "[CLIENT] [WARNING] %s %s:%lu failed to open OpenH264 decoder. going for OpenNothing.\r\n",
             __FUNCTION__, __FILE__, __LINE__);

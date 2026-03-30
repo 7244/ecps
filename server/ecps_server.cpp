@@ -166,7 +166,7 @@ bool CompareCommand(const uint8_t *Command, uintptr_t *iCommand, uintptr_t Comma
       break;
     }
   }
-  uintptr_t StrSize = MEM_cstreu(Str);
+  uintptr_t StrSize = MEM_cstrlen(Str);
   if(StrSize != CommandSize){
     return 0;
   }
@@ -335,7 +335,7 @@ int main(int argc, char **argv){
     return 1;
   }
 
-  uint16_t port = STR_psh32_digit(argv[1], MEM_cstreu(argv[1]));
+  uint16_t port = STR_psh32_digit(argv[1], MEM_cstrlen(argv[1]));
 
   g_pile = new pile_t;
 

@@ -333,7 +333,7 @@ bool CompareCommand(const uint8_t *Input, uintptr_t *iInput, uintptr_t InputSize
     }
   }
   uintptr_t CommandSize = GetSizeOfArgument(Input, iInput, InputSize);
-  uintptr_t StrSize = MEM_cstreu(Str);
+  uintptr_t StrSize = MEM_cstrlen(Str);
   if(StrSize != CommandSize){
     return 0;
   }
