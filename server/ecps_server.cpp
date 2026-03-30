@@ -178,7 +178,7 @@ bool CompareCommand(const uint8_t* Command, uintptr_t* iCommand, uintptr_t Comma
       break;
     }
   }
-  uintptr_t StrSize = MEM_cstreu(Str);
+  uintptr_t StrSize = MEM_cstrlen(Str);
   if (StrSize != CommandSize) {
     return 0;
   }
